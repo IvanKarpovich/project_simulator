@@ -11,6 +11,8 @@ import numpy as np
 import glob, os
 from PIL import Image
 
+import timeit
+
 '''
 Создание директории
 '''
@@ -40,19 +42,9 @@ def create_new_source(x, y, l, t, phi):
     x_shift = xgrid-x
     y_shift = ygrid-y
 
-    global data
-    radius = np.sqrt(x_shift*x_shift + y_shift*y_shift)
+    radius = np.sqrt(x_shift**2+y_shift**2)
     data = np.cos(-radius*2*np.pi/l + 2*np.pi/t*time_wave + phi)
-    
-    global data_x
-    global data_y
-    data_x = x_shift/radius*data
-    data_y = y_shift/radius*data
-    
-    global dataX_0
-    global dataY_0
-    dataX_0 = dataX_0+data_x
-    dataY_0 = dataY_0+data_y
+    return data
 
 '''
 Параметры
@@ -60,25 +52,23 @@ def create_new_source(x, y, l, t, phi):
 PAR_L = 1/3
 PAR_T = 100
 
+t = timeit.default_timer()
 '''
 Рисование N картинок
 '''
-for time_wave in range (0, 5, 5):
-    dataX_0 = xgrid-xgrid
-    dataY_0 = xgrid-xgrid
+for time_wave in range (0, 100, 5):
+    data = xgrid - xgrid
     
-    create_new_source(0, 0, PAR_L, PAR_T, 0)
-
-    #plt.imshow(np.sqrt(dataX_0**2+dataY_0**2),cmap=cm.seismic)
-    plt.imshow(np.sqrt(data_x**2+data_y**2),cmap=cm.seismic)
-    plt.show()
+    data += create_new_source(0, 0, PAR_L, PAR_T, 0)
+    data += create_new_source(0, 0, PAR_L/2, PAR_T, 0)
+    
     plt.imshow(data, cmap=cm.seismic)
-
-    filename = 'frames/step'+str(100000+time_wave)[1:]+'.png'
-    plt.savefig(filename, dpi=100)
-    plt.gca()
-    plt.show()
     
+    filename = 'frames/step'+str(100000+time_wave)[1:]+'.png'
+    plt.savefig(filename, dpi=50)
+    plt.gca()
+    
+print(timeit.default_timer()-t)
 '''
 Создание GIF из картинок
 '''
